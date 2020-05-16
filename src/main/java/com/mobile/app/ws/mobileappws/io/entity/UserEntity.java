@@ -1,5 +1,7 @@
 package com.mobile.app.ws.mobileappws.io.entity;
 
+import org.springframework.stereotype.Component;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,30 +13,30 @@ public class UserEntity implements Serializable {
 
     private static final long serialVersionUID = 5701667515694496071L;
 
-    // id from database
     @Id
     @GeneratedValue
     private long id;
-
-    // public userId return back to ui as randomized alphanumeric value
-    @Column(nullable = false)
+    
+    // public userId return back to ui layer as bcrypted token
+    @Column(name = "id", nullable = false)
     private String userId;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
 
-    @Column(nullable = false, length = 120)
+    @Column(name = "email", nullable = false, length = 120)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "encrypted_password", nullable = false)
     private String encryptedPassword;
 
+    @Column(name = "email_verification_token")
     private String emailVerificationToken;
 
-    @Column(nullable = false)
+    @Column(name = "email_verification_status", nullable = false)
     private Boolean emailVerificationStatus = false;
 
 

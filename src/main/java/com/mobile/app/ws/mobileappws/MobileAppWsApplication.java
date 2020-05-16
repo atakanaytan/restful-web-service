@@ -1,5 +1,6 @@
 package com.mobile.app.ws.mobileappws;
 
+import com.mobile.app.ws.mobileappws.security.AppProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -21,4 +22,5 @@ public class MobileAppWsApplication {
     public SpringApplicationContext springApplicationContext() {
         return new SpringApplicationContext();
     }
+
 }
