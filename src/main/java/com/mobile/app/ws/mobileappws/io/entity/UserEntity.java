@@ -16,9 +16,9 @@ public class UserEntity implements Serializable {
     @Id
     @GeneratedValue
     private long id;
-    
+
     // public userId return back to ui layer as bcrypted token
-    @Column(name = "id", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private String userId;
 
     @Column(name = "first_name", nullable = false, length = 50)
