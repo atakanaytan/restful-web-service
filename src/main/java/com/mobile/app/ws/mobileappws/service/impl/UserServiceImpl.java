@@ -6,7 +6,6 @@ import com.mobile.app.ws.mobileappws.io.repository.UserRepository;
 import com.mobile.app.ws.mobileappws.service.UserService;
 import com.mobile.app.ws.mobileappws.shared.Utils;
 import com.mobile.app.ws.mobileappws.shared.dto.UserDto;
-import com.mobile.app.ws.mobileappws.ui.model.response.ErrorMessage;
 import com.mobile.app.ws.mobileappws.ui.model.response.ErrorMessages;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +85,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findByUserId(userId);
 
         if (userEntity == null){
-            throw new UsernameNotFoundException(userId);
+            throw new UsernameNotFoundException("User with ID: " +userId+ " not found");
         }
 
         BeanUtils.copyProperties(userEntity, returnValue);
@@ -113,4 +112,14 @@ public class UserServiceImpl implements UserService {
         return returnValue;
     }
 
+    @Override
+    public void deleteUser(String userId) {
+        UserEntity userEntity = userRepository.findByUserId(userId);
+
+        if (userEntity == null) {
+            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+        }
+
+        userRepository.delete(userEntity);
+    }
 }

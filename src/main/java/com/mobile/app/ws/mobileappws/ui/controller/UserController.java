@@ -4,8 +4,7 @@ import com.mobile.app.ws.mobileappws.exceptions.UserServiceException;
 import com.mobile.app.ws.mobileappws.service.UserService;
 import com.mobile.app.ws.mobileappws.shared.dto.UserDto;
 import com.mobile.app.ws.mobileappws.ui.model.request.UserDetailsRequestModel;
-import com.mobile.app.ws.mobileappws.ui.model.response.ErrorMessages;
-import com.mobile.app.ws.mobileappws.ui.model.response.UserRest;
+import com.mobile.app.ws.mobileappws.ui.model.response.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -60,5 +59,18 @@ public class UserController {
         BeanUtils.copyProperties(updateUser, returnValue);
 
         return returnValue;
+    }
+
+    @DeleteMapping(path = "/{user_id}")
+    public OperationStatusModel deleteUser(@PathVariable String user_id) {
+
+        OperationStatusModel returnValue = new OperationStatusModel();
+        returnValue.setOperationName(RequestOperationName.DELETE.name());
+
+        userService.deleteUser(user_id);
+
+        returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
+        return returnValue;
+
     }
 }
