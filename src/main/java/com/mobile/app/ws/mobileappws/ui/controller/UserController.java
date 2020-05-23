@@ -14,6 +14,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @RestController
@@ -90,6 +92,29 @@ public class UserController {
         returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
 
         return new ResponseEntity<OperationStatusModel>(returnValue, HttpStatus.OK);
+    }
 
+    @GetMapping
+    public ResponseEntity<?> getUsers(@RequestParam(value = "page", defaultValue = "0") int page,
+                                      @RequestParam(value = "limit", defaultValue = "25") int limit) {
+
+        List<UserRest> returnValue = new ArrayList<UserRest>();
+
+        List<UserDto> users = userService.getUsers(page, limit);
+
+        returnValue = copyUserDtoAsUserRest(users, returnValue);
+
+        return new ResponseEntity<List<UserRest>>(returnValue, HttpStatus.OK);
+    }
+
+    private List<UserRest> copyUserDtoAsUserRest(List<UserDto> users, List<UserRest> returnValue) {
+
+        for (UserDto userDto : users) {
+            UserRest userModel = new UserRest();
+            BeanUtils.copyProperties(userDto, userModel);
+            returnValue.add(userModel);
+        }
+
+        return returnValue;
     }
 }
