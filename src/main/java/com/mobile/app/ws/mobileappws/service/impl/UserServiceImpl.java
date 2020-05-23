@@ -11,7 +11,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,10 +32,11 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto user) {
 
         if (userRepository.findUserByEmail(user.getEmail()) != null) {
-            throw new RuntimeException("Record already exist");
+            throw new UserServiceException(ErrorMessages.RECORD_ALREADY_EXISTS.getErrorMessage());
         }
 
         UserEntity userEntity = new UserEntity();
+
         BeanUtils.copyProperties(user, userEntity);
 
         String publicUserId = utils.generateUserId(30);
@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findUserByEmail(email);
 
         if (userEntity == null){
-            throw new UsernameNotFoundException(email);
+            throw new UserServiceException(ErrorMessages.EMAIL_ADDRESS_NOT_VERIFIED.getErrorMessage() + email);
         }
 
         UserDto returnValue = new UserDto();
@@ -67,12 +67,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) {
 
         UserEntity userEntity = userRepository.findUserByEmail(email);
 
         if (userEntity == null){
-            throw new UsernameNotFoundException(email);
+            throw new UserServiceException(ErrorMessages.EMAIL_ADDRESS_NOT_VERIFIED.getErrorMessage() + email);
         }
 
         return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), new ArrayList<>());
@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findByUserId(userId);
 
         if (userEntity == null){
-            throw new UsernameNotFoundException("User with ID: " +userId+ " not found");
+            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage() + userId);
         }
 
         BeanUtils.copyProperties(userEntity, returnValue);
@@ -96,12 +96,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(String userId, UserDto user) {
 
-        UserDto returnValue = new UserDto();
         UserEntity userEntity = userRepository.findByUserId(userId);
 
         if (userEntity == null) {
-            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage() + userId);
         }
+
+        UserDto returnValue = new UserDto();
 
         userEntity.setFirstName(user.getFirstName());
         userEntity.setLastName(user.getLastName());
@@ -114,12 +115,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(String userId) {
+
         UserEntity userEntity = userRepository.findByUserId(userId);
 
         if (userEntity == null) {
-            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+            throw new UserServiceException(ErrorMessages.COULD_NOT_DELETE_RECORD.getErrorMessage() + userId);
         }
 
         userRepository.delete(userEntity);
     }
+
 }

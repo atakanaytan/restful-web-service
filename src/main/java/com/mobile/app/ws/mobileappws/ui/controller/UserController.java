@@ -1,13 +1,19 @@
 package com.mobile.app.ws.mobileappws.ui.controller;
 
-import com.mobile.app.ws.mobileappws.exceptions.UserServiceException;
+import com.mobile.app.ws.mobileappws.service.validation.MapValidationErrorService;
 import com.mobile.app.ws.mobileappws.service.UserService;
 import com.mobile.app.ws.mobileappws.shared.dto.UserDto;
 import com.mobile.app.ws.mobileappws.ui.model.request.UserDetailsRequestModel;
+import com.mobile.app.ws.mobileappws.ui.model.request.UserUpdateDetailsRequestModel;
 import com.mobile.app.ws.mobileappws.ui.model.response.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 
 @RestController
@@ -17,24 +23,30 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    private MapValidationErrorService mapValidationErrorService;
+
+
     @GetMapping(path="/{user_id}")
-    public UserRest getUser(@PathVariable String user_id){
+    public ResponseEntity<?> getUser(@PathVariable String user_id){
 
         UserRest returnValue = new UserRest();
 
         UserDto userDto = userService.getUserByUserId(user_id);
         BeanUtils.copyProperties(userDto, returnValue);
 
-        return returnValue;
+        return new ResponseEntity<UserRest>(returnValue, HttpStatus.OK);
     }
 
     @PostMapping
-    public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails) throws Exception{
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserDetailsRequestModel userDetails,
+                                        BindingResult result ){
 
         UserRest returnValue = new UserRest();
 
-        if (userDetails.getFirstName().isEmpty()) {
-            throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FIELD.getErrorMessage());
+        ResponseEntity<?> errorMap =  mapValidationErrorService.MapValidationService(result);
+        if(errorMap != null){
+            return errorMap;
         }
 
         UserDto userDto = new UserDto();
@@ -43,26 +55,32 @@ public class UserController {
         UserDto createdUser = userService.createUser(userDto);
         BeanUtils.copyProperties(createdUser, returnValue);
 
-        return returnValue;
+        return new ResponseEntity<UserRest>(returnValue, HttpStatus.CREATED);
     }
 
 
-    @PutMapping(path= "/{user_id}")
-    public UserRest updateUser(@PathVariable String user_id, @RequestBody UserDetailsRequestModel userDetails){
+    @PatchMapping(path= "/{user_id}")
+    public ResponseEntity<?> updateUser(@Valid @RequestBody UserUpdateDetailsRequestModel userUpdatedDetails,
+                                        BindingResult result, @PathVariable String user_id ){
+
+        ResponseEntity<?> errorMap =  mapValidationErrorService.MapValidationService(result);
+        if(errorMap != null){
+            return errorMap;
+        }
 
         UserRest returnValue = new UserRest();
 
         UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(userDetails, userDto);
+        BeanUtils.copyProperties(userUpdatedDetails, userDto);
 
         UserDto updateUser = userService.updateUser(user_id, userDto);
         BeanUtils.copyProperties(updateUser, returnValue);
 
-        return returnValue;
+        return new ResponseEntity<UserRest>(returnValue, HttpStatus.OK);
     }
 
     @DeleteMapping(path = "/{user_id}")
-    public OperationStatusModel deleteUser(@PathVariable String user_id) {
+    public ResponseEntity<?> deleteUser(@PathVariable String user_id) {
 
         OperationStatusModel returnValue = new OperationStatusModel();
         returnValue.setOperationName(RequestOperationName.DELETE.name());
@@ -70,7 +88,8 @@ public class UserController {
         userService.deleteUser(user_id);
 
         returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
-        return returnValue;
+
+        return new ResponseEntity<OperationStatusModel>(returnValue, HttpStatus.OK);
 
     }
 }

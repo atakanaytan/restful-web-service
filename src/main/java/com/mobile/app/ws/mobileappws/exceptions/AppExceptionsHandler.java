@@ -28,4 +28,5 @@ public class AppExceptionsHandler {
 
         return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
 }
