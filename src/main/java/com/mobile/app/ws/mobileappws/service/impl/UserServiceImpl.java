@@ -5,8 +5,10 @@ import com.mobile.app.ws.mobileappws.io.entity.UserEntity;
 import com.mobile.app.ws.mobileappws.io.repository.UserRepository;
 import com.mobile.app.ws.mobileappws.service.UserService;
 import com.mobile.app.ws.mobileappws.shared.Utils;
+import com.mobile.app.ws.mobileappws.shared.dto.AddressDto;
 import com.mobile.app.ws.mobileappws.shared.dto.UserDto;
 import com.mobile.app.ws.mobileappws.ui.model.response.ErrorMessages;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -39,9 +41,16 @@ public class UserServiceImpl implements UserService {
             throw new UserServiceException(ErrorMessages.RECORD_ALREADY_EXISTS.getErrorMessage());
         }
 
-        UserEntity userEntity = new UserEntity();
+        for (int i=0; i<user.getAddresses().size(); i++) {
 
-        BeanUtils.copyProperties(user, userEntity);
+            AddressDto address = user.getAddresses().get(i);
+            address.setUserDetails(user);
+            address.setAddressId(utils.generateAddressId(30));
+            user.getAddresses().set(i, address);
+        }
+
+        ModelMapper modelMapper = new ModelMapper();
+        UserEntity userEntity = modelMapper.map(user, UserEntity.class);
 
         String publicUserId = utils.generateUserId(30);
         userEntity.setUserId(publicUserId);
@@ -49,8 +58,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntity storedUserDetails = userRepository.save(userEntity);
 
-        UserDto returnValue = new UserDto();
-        BeanUtils.copyProperties(storedUserDetails, returnValue);
+        UserDto returnValue = modelMapper.map(storedUserDetails, UserDto.class);
 
         return returnValue;
     }

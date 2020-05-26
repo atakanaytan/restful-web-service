@@ -2,6 +2,7 @@ package com.mobile.app.ws.mobileappws.ui.model.request;
 
 
 import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 public class UserDetailsRequestModel {
 
@@ -17,6 +18,7 @@ public class UserDetailsRequestModel {
     @NotEmpty(message = "Please enter the password")
     private String password;
 
+    private List<AddressRequestModel> addresses;
 
     public String getFirstName() {
         return firstName;
@@ -48,5 +50,13 @@ public class UserDetailsRequestModel {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<AddressRequestModel> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<AddressRequestModel> addresses) {
+        this.addresses = addresses;
     }
 }

@@ -6,10 +6,12 @@ import com.mobile.app.ws.mobileappws.shared.dto.UserDto;
 import com.mobile.app.ws.mobileappws.ui.model.request.UserDetailsRequestModel;
 import com.mobile.app.ws.mobileappws.ui.model.request.UserUpdateDetailsRequestModel;
 import com.mobile.app.ws.mobileappws.ui.model.response.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,20 +44,18 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> createUser(@Valid @RequestBody UserDetailsRequestModel userDetails,
-                                        BindingResult result ){
-
-        UserRest returnValue = new UserRest();
+                                        BindingResult result ) throws Exception{
 
         ResponseEntity<?> errorMap =  mapValidationErrorService.MapValidationService(result);
         if(errorMap != null){
             return errorMap;
         }
 
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(userDetails, userDto);
+        ModelMapper modelMapper = new ModelMapper();
+        UserDto userDto = modelMapper.map(userDetails, UserDto.class);
 
         UserDto createdUser = userService.createUser(userDto);
-        BeanUtils.copyProperties(createdUser, returnValue);
+        UserRest returnValue = modelMapper.map(createdUser, UserRest.class);
 
         return new ResponseEntity<UserRest>(returnValue, HttpStatus.CREATED);
     }
