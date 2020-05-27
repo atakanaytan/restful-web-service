@@ -1,6 +1,5 @@
 package com.mobile.app.ws.mobileappws.io.entity;
 
-import com.mobile.app.ws.mobileappws.shared.dto.UserDto;
 
 import javax.persistence.*;
 import java.io.Serializable;

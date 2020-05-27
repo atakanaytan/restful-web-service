@@ -1,12 +1,15 @@
 package com.mobile.app.ws.mobileappws.ui.controller;
 
+import com.mobile.app.ws.mobileappws.service.AddressService;
 import com.mobile.app.ws.mobileappws.service.validation.MapValidationErrorService;
 import com.mobile.app.ws.mobileappws.service.UserService;
+import com.mobile.app.ws.mobileappws.shared.dto.AddressDto;
 import com.mobile.app.ws.mobileappws.shared.dto.UserDto;
 import com.mobile.app.ws.mobileappws.ui.model.request.UserDetailsRequestModel;
 import com.mobile.app.ws.mobileappws.ui.model.request.UserUpdateDetailsRequestModel;
 import com.mobile.app.ws.mobileappws.ui.model.response.*;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,9 @@ public class UserController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    private AddressService addressService;
 
     @Autowired
     private MapValidationErrorService mapValidationErrorService;
@@ -98,6 +104,21 @@ public class UserController {
         returnValue = mapUserDtoObjectAsUserRest(users, returnValue);
 
         return new ResponseEntity<List<UserRest>>(returnValue, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/{id}/addresses")
+    public ResponseEntity<?> getUserAddresses(@PathVariable String id){
+
+        List<AddressesRest> returnValue  = new ArrayList<>();
+
+        List<AddressDto> addressDto = addressService.getAddresses(id);
+
+        if (addressDto != null && !addressDto.isEmpty()) {
+            java.lang.reflect.Type listType = new TypeToken<List<AddressesRest>>() {}.getType();
+            returnValue = modelMapper.map(addressDto, listType);
+        }
+
+        return new ResponseEntity<List<AddressesRest>>(returnValue, HttpStatus.OK);
     }
 
     private List<UserRest> mapUserDtoObjectAsUserRest(List<UserDto> users, List<UserRest> returnValue) {
