@@ -9,7 +9,6 @@ import com.mobile.app.ws.mobileappws.shared.dto.AddressDto;
 import com.mobile.app.ws.mobileappws.shared.dto.UserDto;
 import com.mobile.app.ws.mobileappws.ui.model.response.ErrorMessages;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,10 +33,16 @@ public class UserServiceImpl implements UserService {
     @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
+
     @Override
     public UserDto createUser(UserDto user) {
 
-        if (userRepository.findUserByEmail(user.getEmail()) != null) {
+        UserEntity userEntity = userRepository.findUserByEmail(user.getEmail());
+
+        if (userEntity != null) {
             throw new UserServiceException(ErrorMessages.RECORD_ALREADY_EXISTS.getErrorMessage());
         }
 
@@ -49,14 +54,13 @@ public class UserServiceImpl implements UserService {
             user.getAddresses().set(i, address);
         }
 
-        ModelMapper modelMapper = new ModelMapper();
-        UserEntity userEntity = modelMapper.map(user, UserEntity.class);
+        UserEntity newUser = modelMapper.map(user, UserEntity.class);
 
         String publicUserId = utils.generateUserId(30);
-        userEntity.setUserId(publicUserId);
-        userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        newUser.setUserId(publicUserId);
+        newUser.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 
-        UserEntity storedUserDetails = userRepository.save(userEntity);
+        UserEntity storedUserDetails = userRepository.save(newUser);
 
         UserDto returnValue = modelMapper.map(storedUserDetails, UserDto.class);
 
@@ -72,8 +76,7 @@ public class UserServiceImpl implements UserService {
             throw new UserServiceException(ErrorMessages.EMAIL_ADDRESS_NOT_VERIFIED.getErrorMessage() + email);
         }
 
-        UserDto returnValue = new UserDto();
-        BeanUtils.copyProperties(userEntity, returnValue);
+        UserDto returnValue = modelMapper.map(userEntity, UserDto.class);
 
         return returnValue;
     }
@@ -93,14 +96,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserByUserId(String userId) {
 
-        UserDto returnValue = new UserDto();
         UserEntity userEntity = userRepository.findByUserId(userId);
 
         if (userEntity == null){
             throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage() + userId);
         }
 
-        BeanUtils.copyProperties(userEntity, returnValue);
+        UserDto returnValue = modelMapper.map(userEntity, UserDto.class);
 
         return returnValue;
     }
@@ -114,13 +116,12 @@ public class UserServiceImpl implements UserService {
             throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage() + userId);
         }
 
-        UserDto returnValue = new UserDto();
-
         userEntity.setFirstName(user.getFirstName());
         userEntity.setLastName(user.getLastName());
 
         UserEntity updatedUserDetails = userRepository.save(userEntity);
-        BeanUtils.copyProperties(updatedUserDetails, returnValue);
+
+        UserDto returnValue = modelMapper.map(updatedUserDetails, UserDto.class);
 
         return returnValue;
     }
@@ -147,16 +148,15 @@ public class UserServiceImpl implements UserService {
         Page<UserEntity> usersPage = userRepository.findAll(pageableRequest);
         List<UserEntity> users = usersPage.getContent();
 
-        returnValue = copyUserDtoAsUserEntity(users, returnValue);
+        returnValue = mapUserEntityObjectToUserDto(users, returnValue);
 
         return returnValue;
     }
 
-    private List<UserDto> copyUserDtoAsUserEntity(List<UserEntity> users, List<UserDto> returnValue) {
+    private List<UserDto> mapUserEntityObjectToUserDto(List<UserEntity> users, List<UserDto> returnValue) {
 
         for (UserEntity userEntity : users){
-            UserDto userDto = new UserDto();
-            BeanUtils.copyProperties(userEntity, userDto);
+            UserDto userDto = modelMapper.map(userEntity, UserDto.class);
             returnValue.add(userDto);
         }
 

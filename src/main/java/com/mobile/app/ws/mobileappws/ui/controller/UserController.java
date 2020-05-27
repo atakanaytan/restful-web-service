@@ -7,11 +7,9 @@ import com.mobile.app.ws.mobileappws.ui.model.request.UserDetailsRequestModel;
 import com.mobile.app.ws.mobileappws.ui.model.request.UserUpdateDetailsRequestModel;
 import com.mobile.app.ws.mobileappws.ui.model.response.*;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,14 +28,14 @@ public class UserController {
     @Autowired
     private MapValidationErrorService mapValidationErrorService;
 
+    @Autowired
+    private ModelMapper modelMapper;
 
     @GetMapping(path="/{user_id}")
     public ResponseEntity<?> getUser(@PathVariable String user_id){
 
-        UserRest returnValue = new UserRest();
-
         UserDto userDto = userService.getUserByUserId(user_id);
-        BeanUtils.copyProperties(userDto, returnValue);
+        UserRest returnValue = modelMapper.map(userDto, UserRest.class);
 
         return new ResponseEntity<UserRest>(returnValue, HttpStatus.OK);
     }
@@ -51,7 +49,6 @@ public class UserController {
             return errorMap;
         }
 
-        ModelMapper modelMapper = new ModelMapper();
         UserDto userDto = modelMapper.map(userDetails, UserDto.class);
 
         UserDto createdUser = userService.createUser(userDto);
@@ -59,7 +56,6 @@ public class UserController {
 
         return new ResponseEntity<UserRest>(returnValue, HttpStatus.CREATED);
     }
-
 
     @PatchMapping(path= "/{user_id}")
     public ResponseEntity<?> updateUser(@Valid @RequestBody UserUpdateDetailsRequestModel userUpdatedDetails,
@@ -70,13 +66,10 @@ public class UserController {
             return errorMap;
         }
 
-        UserRest returnValue = new UserRest();
+        UserDto userDto = modelMapper.map(userUpdatedDetails, UserDto.class);
 
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(userUpdatedDetails, userDto);
-
-        UserDto updateUser = userService.updateUser(user_id, userDto);
-        BeanUtils.copyProperties(updateUser, returnValue);
+        UserDto  updateUser  = userService.updateUser(user_id, userDto);
+        UserRest returnValue = modelMapper.map(updateUser, UserRest.class);
 
         return new ResponseEntity<UserRest>(returnValue, HttpStatus.OK);
     }
@@ -102,17 +95,16 @@ public class UserController {
 
         List<UserDto> users = userService.getUsers(page, limit);
 
-        returnValue = copyUserDtoAsUserRest(users, returnValue);
+        returnValue = mapUserDtoObjectAsUserRest(users, returnValue);
 
         return new ResponseEntity<List<UserRest>>(returnValue, HttpStatus.OK);
     }
 
-    private List<UserRest> copyUserDtoAsUserRest(List<UserDto> users, List<UserRest> returnValue) {
+    private List<UserRest> mapUserDtoObjectAsUserRest(List<UserDto> users, List<UserRest> returnValue) {
 
         for (UserDto userDto : users) {
-            UserRest userModel = new UserRest();
-            BeanUtils.copyProperties(userDto, userModel);
-            returnValue.add(userModel);
+             UserRest userModel = modelMapper.map(userDto, UserRest.class);
+             returnValue.add(userModel);
         }
 
         return returnValue;

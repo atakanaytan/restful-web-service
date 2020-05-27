@@ -1,5 +1,6 @@
 package com.mobile.app.ws.mobileappws;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -27,6 +28,11 @@ public class MobileAppWsApplication extends SpringBootServletInitializer {
     @Bean
     public SpringApplicationContext springApplicationContext() {
         return new SpringApplicationContext();
+    }
+
+    @Bean(name = "ModelMapper")
+    public ModelMapper modelMapper(){
+        return new ModelMapper();
     }
 
 }
