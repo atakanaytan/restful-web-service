@@ -106,12 +106,12 @@ public class UserController {
         return new ResponseEntity<List<UserRest>>(returnValue, HttpStatus.OK);
     }
 
-    @GetMapping(path = "/{id}/addresses")
-    public ResponseEntity<?> getUserAddresses(@PathVariable String id){
+    @GetMapping(path = "/{user_id}/addresses")
+    public ResponseEntity<?> getUserAddresses(@PathVariable String user_id){
 
         List<AddressesRest> returnValue  = new ArrayList<>();
 
-        List<AddressDto> addressDto = addressService.getAddresses(id);
+        List<AddressDto> addressDto = addressService.getAddresses(user_id);
 
         if (addressDto != null && !addressDto.isEmpty()) {
             java.lang.reflect.Type listType = new TypeToken<List<AddressesRest>>() {}.getType();
@@ -119,6 +119,18 @@ public class UserController {
         }
 
         return new ResponseEntity<List<AddressesRest>>(returnValue, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/{user_id}/addresses/{address_id}")
+    public ResponseEntity<?> getUserAddress(@PathVariable String user_id, @PathVariable String address_id) {
+
+        AddressDto addressDto = addressService.getAddress(user_id, address_id);
+
+        ModelMapper modelMapper = new ModelMapper();
+
+        AddressesRest returnValue = modelMapper.map(addressDto, AddressesRest.class);
+
+        return new ResponseEntity<AddressesRest>(returnValue, HttpStatus.OK);
     }
 
     private List<UserRest> mapUserDtoObjectAsUserRest(List<UserDto> users, List<UserRest> returnValue) {

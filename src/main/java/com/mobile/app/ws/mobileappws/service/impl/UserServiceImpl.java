@@ -28,14 +28,13 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
 
     @Autowired
-    Utils utils;
-
-    @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    Utils utils;
 
     @Override
     public UserDto createUser(UserDto user) {
