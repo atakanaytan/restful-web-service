@@ -58,6 +58,8 @@ public class UserServiceImpl implements UserService {
         String publicUserId = utils.generateUserId(30);
         newUser.setUserId(publicUserId);
         newUser.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        newUser.setEmailVerificationToken(utils.generateEmailVerificationToken(publicUserId));
+        newUser.setEmailVerificationStatus(false);
 
         UserEntity storedUserDetails = userRepository.save(newUser);
 
@@ -89,7 +91,10 @@ public class UserServiceImpl implements UserService {
             throw new UserServiceException(ErrorMessages.EMAIL_ADDRESS_NOT_VERIFIED.getErrorMessage() + email);
         }
 
-        return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), new ArrayList<>());
+        return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(),
+                userEntity.getEmailVerificationStatus(),
+                true, true,
+                true, new ArrayList<>());
     }
 
     @Override
@@ -148,6 +153,26 @@ public class UserServiceImpl implements UserService {
         List<UserEntity> users = usersPage.getContent();
 
         returnValue = mapUserEntityObjectToUserDto(users, returnValue);
+
+        return returnValue;
+    }
+
+    @Override
+    public boolean verifyEmailToken(String token) {
+
+        boolean returnValue = false;
+
+        UserEntity userEntity = userRepository.findUserByEmailVerificationToken(token);
+
+        if (userEntity != null) {
+            boolean hasTokenExpired = Utils.hasTokenExpired(token);
+            if (!hasTokenExpired) {
+                userEntity.setEmailVerificationToken(null);
+                userEntity.setEmailVerificationStatus(Boolean.TRUE);
+                userRepository.save(userEntity);
+                returnValue = true;
+            }
+        }
 
         return returnValue;
     }

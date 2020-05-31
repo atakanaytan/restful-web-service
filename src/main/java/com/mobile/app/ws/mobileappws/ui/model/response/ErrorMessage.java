@@ -30,4 +30,8 @@ public class ErrorMessage {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    public enum RequestOperationName {
+        DELETE, VERIFY_EMAIL
+    }
 }

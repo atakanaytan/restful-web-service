@@ -22,7 +22,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("users")
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
@@ -84,7 +84,7 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable String user_id) {
 
         OperationStatusModel returnValue = new OperationStatusModel();
-        returnValue.setOperationName(RequestOperationName.DELETE.name());
+        returnValue.setOperationName(ErrorMessage.RequestOperationName.DELETE.name());
 
         userService.deleteUser(user_id);
 
@@ -132,6 +132,26 @@ public class UserController {
 
         return new ResponseEntity<AddressesRest>(returnValue, HttpStatus.OK);
     }
+
+    @GetMapping(path = "/email-verification")
+    public ResponseEntity<?> verifyEmailToken(@RequestParam(value = "token") String token) {
+
+        OperationStatusModel returnValue = new OperationStatusModel();
+        returnValue.setOperationName(ErrorMessage.RequestOperationName.VERIFY_EMAIL.name());
+
+        boolean isVerified = userService.verifyEmailToken(token);
+
+        if (isVerified) {
+            returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
+        } else {
+            returnValue.setOperationResult(RequestOperationStatus.ERROR.name());
+        }
+
+        return new ResponseEntity<OperationStatusModel>(returnValue, HttpStatus.OK);
+    }
+
+
+
 
     private List<UserRest> mapUserDtoObjectAsUserRest(List<UserDto> users, List<UserRest> returnValue) {
 
