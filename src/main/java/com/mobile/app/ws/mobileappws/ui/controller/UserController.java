@@ -5,6 +5,8 @@ import com.mobile.app.ws.mobileappws.service.validation.MapValidationErrorServic
 import com.mobile.app.ws.mobileappws.service.UserService;
 import com.mobile.app.ws.mobileappws.shared.dto.AddressDto;
 import com.mobile.app.ws.mobileappws.shared.dto.UserDto;
+import com.mobile.app.ws.mobileappws.ui.model.request.PasswordResetModel;
+import com.mobile.app.ws.mobileappws.ui.model.request.PasswordResetRequestModel;
 import com.mobile.app.ws.mobileappws.ui.model.request.UserDetailsRequestModel;
 import com.mobile.app.ws.mobileappws.ui.model.request.UserUpdateDetailsRequestModel;
 import com.mobile.app.ws.mobileappws.ui.model.response.*;
@@ -151,7 +153,43 @@ public class UserController {
     }
 
 
+    @PostMapping(path= "/password-reset-request")
+    public ResponseEntity<?> passwordRequestRest(@RequestBody PasswordResetRequestModel passwordResetRequestModel) {
 
+        OperationStatusModel returnValue = new OperationStatusModel();
+
+        boolean operationResult = userService.requestPasswordReset(passwordResetRequestModel.getEmail());
+
+        returnValue.setOperationName(RequestOperationName.REQUEST_OPERATION_NAME.name());
+        returnValue.setOperationResult(RequestOperationStatus.ERROR.name());
+
+        if (operationResult){
+
+            returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
+        }
+
+        return new ResponseEntity<OperationStatusModel>(returnValue, HttpStatus.OK);
+    }
+
+
+    @PostMapping(path = "/password-reset")
+    public ResponseEntity<?> resetPassword(@RequestBody PasswordResetModel passwordResetModel) {
+
+        OperationStatusModel returnValue = new OperationStatusModel();
+
+        boolean operationResult = userService.resetPassword(
+                passwordResetModel.getToken(),
+                passwordResetModel.getPassword());
+
+        returnValue.setOperationName(RequestOperationName.PASSWORD_RESET.name());
+        returnValue.setOperationName(RequestOperationStatus.ERROR.name());
+
+        if (operationResult) {
+            returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
+        }
+
+        return new ResponseEntity<OperationStatusModel>(returnValue, HttpStatus.OK);
+    }
 
     private List<UserRest> mapUserDtoObjectAsUserRest(List<UserDto> users, List<UserRest> returnValue) {
 
